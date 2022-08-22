@@ -1,9 +1,9 @@
 ---
 version: 2
 plan:
-  project-key: THAL
-  key: PUL
-  name: Hello-World-Linux-1
+  project-key: THAL2
+  key: PUL2
+  name: Hello-World-Linux-12
   description: Does git Pull on Bamboo-Hello_world and compiles it in Gradle
 stages:
 - Default Stage:
@@ -12,7 +12,7 @@ stages:
     jobs:
     - Default Job
 Default Job:
-  key: JOB1
+  key: JOB12
   tasks:
   - checkout:
       force-clean-build: 'false'
@@ -28,7 +28,7 @@ Default Job:
       working-dir: app/src/main/resources
       description: Build Large File
   - script:
-      interpreter: SHELL
+      interpreter: SHELL2
       scripts:
       - |-
         #!/bin/sh
@@ -108,13 +108,13 @@ dependencies:
   enabled-for-branches: true
   block-strategy: none
   plans:
-  - THAL-HEL
+  - THAL-HEL2
 other:
   concurrent-build-plugin: system-default
 ---
 version: 2
 plan:
-  key: THAL-PUL
+  key: THAL-PUL2
 plan-permissions:
 - users:
   - admin
