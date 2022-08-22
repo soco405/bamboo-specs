@@ -2,20 +2,17 @@
 version: 2
 plan:
   project-key: THAL
-  key: AL
-  name: All-Agents
-  description: Doing all Agents at once
+  key: PUL
+  name: Hello-World-Linux-1
+  description: Does git Pull on Bamboo-Hello_world and compiles it in Gradle
 stages:
 - Default Stage:
     manual: false
     final: false
     jobs:
-    - All-Plans-Linux2
-    - All-Plans-Linux1
-    - All-Plans-Windows1
-    - All-Plans-Windows2
-All-Plans-Linux2:
-  key: AL
+    - Default Job
+Default Job:
+  key: JOB1
   tasks:
   - checkout:
       force-clean-build: 'false'
@@ -33,7 +30,26 @@ All-Plans-Linux2:
   - script:
       interpreter: SHELL
       scripts:
-      - "#/bin/bash\n\n./gradlew clean build \n./gradlew jar"
+      - |-
+        #!/bin/sh
+
+        javaApp=app/build/libs/app.jar
+
+        #Clean build environment
+        ./gradlew clean build
+
+        #package Hellow World into a jar file
+        ./gradlew jar
+
+        if test -f "$javaApp";
+                then
+        echo "success, jar file exists"
+        exit  0
+                else
+        echo "jar file is missing"
+        exit  1
+
+        fi
       description: Gradle clean build
   - script:
       interpreter: SHELL
@@ -43,90 +59,32 @@ All-Plans-Linux2:
 
         java -jar app/build/libs/app.jar
       description: Display Hello world
-  requirements:
-  - agentname: Linux-2
-  artifact-subscriptions: []
-All-Plans-Linux1:
-  key: AL1
-  tasks:
-  - checkout:
-      force-clean-build: 'false'
-      description: Checkout Default Repository
   - script:
       interpreter: SHELL
       scripts:
       - |-
-        #!/bin/bash
-        #create a 2gb file
-        #dd if=/dev/urandom of=./2gb-file bs=1024 count=2048000 iflag=fullblock
-        dd if=/dev/urandom of=./2mb-file bs=1024 count=2048 iflag=fullblock
-      working-dir: app/src/main/resources
-      description: Build Large File
-  - script:
-      interpreter: SHELL
-      scripts:
-      - "#/bin/bash\n\n./gradlew clean build \n./gradlew jar"
-      description: Gradle clean build
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
+        #!/bin/sh
 
-        java -jar app/build/libs/app.jar
-      description: Display Hello world
+        CorrectSize=2000000
+
+        ActualSize=$(cat app/build/libs/app.jar | wc -c)
+        if [ "$ActualSize" -gt  "$CorrectSize" ]
+                then
+                        exit  0
+                else
+        echo "Size of the java file is too small"
+        exit  1
+
+        fi
+      description: Java App size
+  artifacts:
+  - name: App .jar
+    location: app/build/libs/
+    pattern: app.jar
+    shared: false
+    required: true
   requirements:
   - agentname: Linux-1
-  artifact-subscriptions: []
-All-Plans-Windows1:
-  key: HWW1
-  tasks:
-  - checkout:
-      force-clean-build: 'false'
-      description: Checkout Default Repository
-  - script:
-      interpreter: WINDOWS_POWER_SHELL
-      scripts:
-      - $out = new-object byte[] 2048576; (new-object Random).NextBytes($out); [IO.File]::WriteAllBytes("2gb.txt", $out)
-      working-dir: app/src/main/resources
-      description: Buld Large File
-  - script:
-      interpreter: SHELL
-      scripts:
-      - ".\\gradlew clean build \n.\\gradlew jar"
-      description: Gradle clean build
-  - script:
-      interpreter: SHELL
-      scripts:
-      - java -jar app/build/libs/app.jar
-      description: Display Hello world
-  requirements:
-  - agentname: Windows-1010
-  artifact-subscriptions: []
-All-Plans-Windows2:
-  key: APW2
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: WINDOWS_POWER_SHELL
-      scripts:
-      - $out = new-object byte[] 2048576; (new-object Random).NextBytes($out); [IO.File]::WriteAllBytes("2gb.txt", $out)
-      working-dir: app/src/main/resources
-      description: Build Large File
-  - script:
-      interpreter: SHELL
-      scripts:
-      - ".\\gradlew clean build \n.\\gradlew jar"
-      description: Gradle clean build
-  - script:
-      interpreter: WINDOWS_POWER_SHELL
-      scripts:
-      - java -jar app/build/libs/app.jar
-      description: Display Hello world
-  requirements:
-  - agentname: Windows-2020
   artifact-subscriptions: []
 repositories:
 - Bamboo-hello-world:
@@ -138,19 +96,25 @@ branches:
   create: manually
   delete: never
   link-to-jira: true
-notifications: []
+notifications:
+- events:
+  - plan-completed
+  recipients:
+  - emails:
+    - john.harris@isostech.dev
 labels: []
 dependencies:
   require-all-stages-passing: false
   enabled-for-branches: true
   block-strategy: none
-  plans: []
+  plans:
+  - THAL-HEL
 other:
   concurrent-build-plugin: system-default
 ---
 version: 2
 plan:
-  key: THAL-AL
+  key: THAL-PUL
 plan-permissions:
 - users:
   - admin
